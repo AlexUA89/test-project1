@@ -1,0 +1,56 @@
+apply plugin: 'java'
+
+//properties
+ext {
+    version = "0.1"
+    propertiesFolder = "properties/"
+    propertiesFile = "build.properties"
+}
+
+def String ENVIRONMENT
+def props
+
+task BUILD_DEV() {
+    ENVIRONMENT = "DEV"
+}
+
+task defining_props() {
+    //LOADING PROPERTIES
+    props = new Properties()
+    file(project.ext.get("propertiesFolder") + ENVIRONMENT + "/" + project.ext.get("propertiesFile")).withInputStream {
+        props.load(it)
+    }
+}
+
+task buildFEComponent(type:Exec) {
+    // BUILDING FE
+    String buildFeCommand = 'cd frontend && gradle npm_run-script_build && cd ..'
+
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine 'cmd', '/c', buildFeCommand
+    } else {
+        commandLine buildFeCommand
+    }
+}
+
+task packageFEstaticSources(type: Copy) {
+    from './frontend/build'
+    into './backend/src/main/resources/public'
+}
+
+task buildBEComponent(type:Exec) {
+    // BUILDING FE
+    String buildBeCommand = 'cd backend && gradle bootJar && cd ..'
+
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine 'cmd', '/c', buildBeCommand
+    } else {
+        commandLine buildBeCommand
+    }
+}
+
+BUILD_DEV.finalizedBy defining_props
+
+defining_props.finalizedBy buildFEComponent
+buildFEComponent.finalizedBy packageFEstaticSources
+packageFEstaticSources.finalizedBy buildBEComponent

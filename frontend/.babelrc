@@ -1,0 +1,4 @@
+{
+  "presets": ["babel-preset-react-native","react","es2015"],
+  "plugins": ["transform-decorators-legacy", "transform-class-properties","babel-plugin-transform-decorators-legacy"]
+}
