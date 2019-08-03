@@ -14,12 +14,30 @@ task BUILD_DEV() {
     ENVIRONMENT = "DEV"
 }
 
+static def gitBranch() {
+    def branch = ""
+    def proc = "git rev-parse --abbrev-ref HEAD".execute()
+    proc.in.eachLine { line -> branch = line }
+    proc.err.eachLine { line -> println line }
+    proc.waitFor()
+    branch
+}
+
+static def getRevision() {
+    def cmd = "git rev-parse --short HEAD"
+    def proc = cmd.execute()
+    def revision = proc.text.trim()
+    def timestamp = (int)(new Date().getTime()/1000)
+    revision
+}
+
 task defining_props() {
     //LOADING PROPERTIES
     props = new Properties()
     file(project.ext.get("propertiesFolder") + ENVIRONMENT + "/" + project.ext.get("propertiesFile")).withInputStream {
         props.load(it)
     }
+    println "building branch "+ gitBranch() + " revision "+ getRevision()
 }
 
 task buildFEComponent(type:Exec) {
